@@ -1,6 +1,6 @@
 # Workflow of Tasks
 
-*Replace all bracketed prompts with information specific to your proposed system. Delete instructional text that does not belong in your final specification. Add or remove task sections as needed. Every task shown in the general workflow must have a corresponding task specification below.*
+
 
 ## 1. Workflow Overview
 ### 1.1 Workflow Goal
@@ -8,26 +8,37 @@ This workflow supports the system goal defined in `my_first_agent/README.md`.
 
 ### 1.2 Workflow Trigger
 
-[Describe the event, request, schedule, or condition that starts the workflow.]
+The workflow begins when a CPVC organizer requests an attendance forecast for an upcoming hackathon using the current registration information and any available optional check-ins.
 
 ### 1.3 Completion Condition at Runtime
 
-[Describe how the system knows, on any given run, that this workflow is completed.]
+The workflow is complete when HackTrack delivers an attendance forecast and planning recommendation to the CPVC organizer for review.
 
 ### 1.4 General Workflow
 
-[Describe the overall sequence of tasks in one or two paragraphs. Explain the normal path first, followed by the most important exception paths and human-review points.]
+HackTrack collects the current registration information and any available optional check-in information. It prepares the information for analysis, uses the previous event’s attendance rate as a starting point, and estimates how many registered students are likely to attend. The system then generates a planning recommendation to help CPVC organizers prepare appropriate amounts of food, drinks, and swag.
+
+If the available information is incomplete or unclear, the system flags the issue for a CPVC organizer to review before completing the forecast. The organizer can review the forecast and recommendation before using them for event planning.
 
 ### 1.5 Workflow Diagram
 
-[Insert a flowchart showing the tasks in sequence. Label each task with a task number and short name. Show decision branches, loops, review points, and possible stopping conditions. Below is an example of a Mermaid. You can either edit the mermaid below yourself or ask ChatGPT to generate a Mermaid script based on your workflow description above. Give every task a unique ID, such as T1, T2, and T3, and name tasks using a verb and an object in the mermaid.]
+
 
 ```mermaid
 flowchart TD
-    T1["T1: First task"] --> T2["T2: Second task"]
-    T2 --> D1{"Decision condition?"}
-    D1 -->|Yes| T3["T3: Next task"]
-    D1 -->|No| H1["Human review"]
-    H1 --> T3
-    T3 --> C1([C1: Completion state])
+    S(["Trigger: Organizer requests attendance forecast"])
+    T1["T1: Collect attendance inputs"]
+    T2["T2: Prepare analysis inputs"]
+    D1{"D1: Are inputs complete and clear?"}
+    T3["T3: Estimate attendance"]
+    T4["T4: Request organizer review"]
+    T5["T5: Generate planning recommendation"]
+    T6["T6: Deliver forecast and recommendation"]
+    C1(["Completion: Organizer receives forecast and recommendation"])
+
+    S --> T1 --> T2 --> D1
+    D1 -->|Yes| T3
+    D1 -->|No| T4
+    T4 --> T2
+    T3 --> T5 --> T6 --> C1
 ```
