@@ -5,6 +5,12 @@
 task_id: "T5"
 task_name: "Generate planning recommendation"
 task_owner: "Hackathon organizer"
+# Agent Inference Configuration
+Provider: Groq
+Model: "openai/gpt-oss-120b"
+Role: Analyze the attendance forecast and planning inputs, then create a practical staffing, capacity, check-in, and supply recommendation.
+Maximum inference requests per task run: 4
+On inference failure or exhausted limits: Record the unresolved status and hand the case to the Hackathon organizer.
 ```
 
 ## 1. Task Goal
@@ -26,7 +32,51 @@ task_owner: "Hackathon organizer"
 - **Source:** T2: Prepare analysis inputs.
 
 ## 3. Tool Permissions and Boundaries
+*The agent may only read the provided forecast and planning inputs, analyze them, and create a recommendation. It may not make bookings, purchase supplies, change event records, or contact people on its own.*
 
+### Task-Wide Limits
+
+- **Total task timeout:** 5 minutes, including tool calls, retries, and waiting.
+- **Maximum tool calls:** 6 total calls across all tools during one task run; retries count toward this total.
+
+### Tool 1
+
+- **Tool name:** **`retrieve_planning_inputs`**
+- **Input:** `attendance_forecast` and `planning_inputs`
+- **Output:** `validated_planning_context`
+- **Implementation Route:** File operations
+- **Integration approach:** Direct integration
+- **Role in this task:** Retrieve the forecast and prepared event details, then check that the needed information is available for a recommendation.
+- **Task timeout:** 45 seconds
+- **Maximum retries:** 1
+- **Retry only when:** A read-only file retrieval fails because of a temporary connection or file-access error. The retry only rereads the inputs and does not change any records.
+- **On timeout, exhausted retries, or an error that cannot be retried:** Record which input is missing or unavailable and hand the case to the Hackathon organizer.
+
+### Tool 2
+
+- **Tool name:** **`analyze_event_constraints`**
+- **Input:** `planning_inputs`
+- **Output:** `constraint_summary`
+- **Implementation Route:** Functions/scripts
+- **Integration approach:** Direct integration
+- **Role in this task:** Identify capacity, staffing, check-in, supply, schedule, and organizer-priority constraints that affect the recommendation.
+- **Task timeout:** 45 seconds
+- **Maximum retries:** 1
+- **Retry only when:** A temporary calculation or execution error occurs. The retry only reanalyzes the same inputs and does not change event records.
+- **On timeout, exhausted retries, or an error that cannot be retried:** Record the unresolved constraint and hand the case to the Hackathon organizer.
+
+### Tool 3
+
+- **Tool name:** **`generate_planning_recommendation`**
+- **Input:** `attendance_forecast` and `planning_inputs`
+- **Output:** `planning_recommendation`
+- **Implementation Route:** Functions/scripts
+- **Integration approach:** Direct integration
+- **Role in this task:** Create a practical recommendation for staffing, capacity, check-in, supplies, and other event needs, while clearly noting forecast uncertainty.
+- **Task timeout:** 60 seconds
+- **Maximum retries:** 0
+- **Retry only when:** Not applicable.
+- **On timeout, exhausted retries, or an error that cannot be retried:** Record that a recommendation was not produced and hand the case, along with the available inputs and constraint summary, to the Hackathon organizer.
 ## 4. How the Agent Should Reason
 
 ### Permitted Subtask 1
