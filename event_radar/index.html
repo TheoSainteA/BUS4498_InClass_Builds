@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="A public event board for campus club events.">
+  <title>Club Event Radar</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="top">
+    <div class="wrap">
+      <p class="kicker">Campus club calendar</p>
+      <h1>Club Event Radar</h1>
+      <p class="lede">Find something good on campus—or turn your club announcement into a clear event card.</p>
+      <ul class="badges" aria-label="Website features">
+        <li>Open to students</li>
+        <li>Free to browse</li>
+        <li>Checked before posting</li>
+      </ul>
+    </div>
+  </header>
+
+  <main class="wrap layout">
+    <section class="card post" aria-labelledby="post-heading">
+      <h2 id="post-heading">Post an event</h2>
+      <p class="muted">Paste the announcement your club wants to share. The event agent will check the details and format the card.</p>
+      <form id="post-form">
+        <label for="announcement">
+          Announcement
+          <span class="hint">1–2,000 characters. Include the date, time, place, and cost.</span>
+        </label>
+        <textarea id="announcement" name="announcement" maxlength="2000" required placeholder="Example: Board Game Guild: Game Night! Thursday, October 29, 7 to 10 pm in the University Union, Room 220. Free entry and free pizza while it lasts."></textarea>
+        <button type="submit" id="post-button">Check and post</button>
+      </form>
+      <div id="post-result" class="result" hidden aria-live="polite">
+        <p class="result-label"></p>
+        <p class="result-message"></p>
+        <ul class="reasons"></ul>
+      </div>
+    </section>
+
+    <section class="board-section" aria-labelledby="board-heading">
+      <div class="board-head">
+        <div>
+          <p class="kicker">What’s happening</p>
+          <h2 id="board-heading">Upcoming events</h2>
+        </div>
+        <button class="ghost" type="button" id="refresh-button">Refresh</button>
+      </div>
+      <div class="filters" aria-label="Event filters">
+        <button class="chip" type="button" data-filter="all" aria-pressed="true">All events</button>
+        <button class="chip" type="button" data-filter="free" aria-pressed="false">Free</button>
+        <button class="chip" type="button" data-filter="food" aria-pressed="false">Free food</button>
+      </div>
+      <ul class="board" id="event-board" aria-live="polite">
+        <li class="empty">Loading events…</li>
+      </ul>
+    </section>
+  </main>
+
+  <footer class="wrap foot">
+    <p>Club Event Radar · A BUS 4498 practice build</p>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.js"></script>
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
