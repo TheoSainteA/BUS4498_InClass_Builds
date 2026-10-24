@@ -12,6 +12,7 @@
   var reasons = result.querySelector(".reasons");
   var activeFilter = "all";
   var events = [];
+  var maxFlyerBytes = 5 * 1024 * 1024;
 
   var statusLabels = {
     published: "Published",
@@ -73,6 +74,17 @@
     return true;
   }
 
+  function isProjectFlyerUrl(value) {
+    if (!value || !config.supabaseUrl) return false;
+    try {
+      var projectUrl = new URL(config.supabaseUrl);
+      var flyerUrl = new URL(value);
+      return flyerUrl.origin === projectUrl.origin && flyerUrl.pathname.indexOf("/storage/v1/object/public/flyers/") === 0;
+    } catch (error) {
+      return false;
+    }
+  }
+
   function buildEventCard(event) {
     var item = makeElement("li", "event");
     var dateParts = formatDateParts(event.event_date);
@@ -106,6 +118,14 @@
 
     item.appendChild(date);
     item.appendChild(body);
+    if (isProjectFlyerUrl(event.flyer_url)) {
+      var flyer = document.createElement("img");
+      flyer.className = "flyer";
+      flyer.src = event.flyer_url;
+      flyer.alt = "Flyer for " + (event.title || "event");
+      flyer.loading = "lazy";
+      item.appendChild(flyer);
+    }
     return item;
   }
 
@@ -132,7 +152,7 @@
     var client = window.supabase.createClient(config.supabaseUrl, config.publishableKey);
     var response = await client
       .from("events")
-      .select("id, created_at, status, title, club, event_date, start_time, end_time, place_name, place_detail, cost, free_food, summary")
+      .select("id, created_at, status, title, club, event_date, start_time, end_time, place_name, place_detail, cost, free_food, summary, flyer_url")
       .eq("status", "published")
       .order("event_date", { ascending: true, nullsFirst: false })
       .order("start_time", { ascending: true, nullsFirst: false });
@@ -160,8 +180,18 @@
   async function submitAnnouncement(event) {
     event.preventDefault();
     var announcement = document.getElementById("announcement").value.trim();
+    var flyerInput = document.getElementById("flyer");
+    var flyerFile = flyerInput.files && flyerInput.files[0];
     if (announcement.length < 1 || announcement.length > 2000) {
       showResult("error", "Please enter an announcement between 1 and 2,000 characters.");
+      return;
+    }
+    if (flyerFile && flyerFile.type !== "image/jpeg" && flyerFile.type !== "image/png") {
+      showResult("error", "The flyer must be a JPG or PNG image.");
+      return;
+    }
+    if (flyerFile && flyerFile.size > maxFlyerBytes) {
+      showResult("error", "The flyer must be 5 MB or smaller.");
       return;
     }
     if (!config.supabaseUrl || !config.publishableKey) {
@@ -172,8 +202,8 @@
     postButton.disabled = true;
     postButton.textContent = "Checking…";
     result.hidden = true;
-    var formData = new FormData();
-    formData.append("announcement", announcement);
+    var formData = new FormData(form);
+    formData.set("announcement", announcement);
     try {
       var response = await fetch(config.supabaseUrl + "/functions/v1/submit-event", {
         method: "POST",
