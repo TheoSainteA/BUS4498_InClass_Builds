@@ -60,6 +60,38 @@
       <ul class="board" id="event-board" aria-live="polite">
         <li class="empty">Loading events…</li>
       </ul>
+
+      <details class="card mod" id="moderator-panel">
+        <summary>Moderator sign-in</summary>
+        <div id="moderator-login">
+          <p class="muted">Sign in to review posts that need a moderator.</p>
+          <form id="moderator-login-form">
+            <label for="moderator-login-email">Email</label>
+            <input id="moderator-login-email" type="email" autocomplete="username" required>
+            <label for="moderator-login-password">Password</label>
+            <input id="moderator-login-password" type="password" autocomplete="current-password" required>
+            <button type="submit">Sign in</button>
+          </form>
+        </div>
+        <div id="moderator-workspace" hidden>
+          <div class="board-head">
+            <div>
+              <p class="kicker">Moderator queue</p>
+              <h3>Waiting for review</h3>
+              <p class="muted">Signed in as <span id="moderator-email"></span></p>
+            </div>
+            <button class="ghost" type="button" id="sign-out-button">Sign out</button>
+          </div>
+          <div id="moderator-status" class="result" hidden aria-live="polite">
+            <p class="result-label"></p>
+            <p class="result-message"></p>
+            <ul class="reasons"></ul>
+          </div>
+          <ul class="board preview" id="waiting-board" aria-live="polite">
+            <li class="empty">Sign in to see posts waiting for review.</li>
+          </ul>
+        </div>
+      </details>
     </section>
   </main>
 
